@@ -3,6 +3,10 @@ const router = express.Router();
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require('../models/User');
+const dotenv = require('dotenv');
+const Log = require('../models/Log');
+const { route } = require("./urlActions");
+dotenv.config()
 
 router.post("/login", (req, res) => {
     console.log(req.body)
@@ -15,22 +19,11 @@ router.post("/login", (req, res) => {
         bcrypt.compare(password, user.password).then(isMatch => {
             if (isMatch) {
                 const payload = {
-                    id: user.id,
+                    id: user._id,
                     name: user.name
                 };
-                jwt.sign(
-                    payload,
-                    'keys.secretOrKey',
-                    {
-                        expiresIn: 31556926 // 1 year in seconds
-                    },
-                    (err, token) => {
-                        res.json({
-                            success: true,
-                            token: "Bearer " + token
-                        });
-                    }
-                );
+                const token = jwt.sign(payload,process.env.JWT_KEY);
+                res.send({Success:true,token:token})
             } else {
                 return res
                     .status(400)
@@ -46,7 +39,6 @@ router.post("/register", (req, res) => {
             return res.status(400).json({ email: "Email already exists" });
         } else {
             const newUser = new User({
-                name: req.body.name,
                 email: req.body.email,
                 password: req.body.password
             });
@@ -56,12 +48,35 @@ router.post("/register", (req, res) => {
                     newUser.password = hash;
                     newUser
                         .save()
-                        .then(user => res.json(user))
+                        .then(user => res.send('Success'))
                         .catch(err => console.log(err));
                 });
             });
         }
     });
 });
+
+router.post('/deleteLog',async(req,res)=>{
+    const verified = jwt.verify(req.headers.autherization.split(' ')[1],process.env.JWT_KEY);
+    if(!verified)return res.send('Denied')
+    try {
+        await Log.update({userId:verified.id},{$pull:{logs:{_id:req.body.id}}})
+        res.send('Success')
+    } catch (error) {
+    
+    }
+   
+    
+    
+})
+
+
+router.get('/getLogs',async(req,res)=>{
+    const verified = jwt.verify(req.headers.autherization.split(' ')[1],process.env.JWT_KEY);
+    if(!verified)return res.send('Denied');
+    const {logs} = await Log.findOne({userId:verified.id},{_id:0,userId:0,__v:0});
+    res.send({logs:logs})
+    
+})
 
 module.exports = router;
