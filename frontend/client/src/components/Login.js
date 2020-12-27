@@ -17,7 +17,7 @@ function Login(props) {
     }
     useEffect(() => {
         if(userInfo){
-            props.history.push('/dashboard');
+            props.history.push('/user');
         }
         return () => {
            // cleanup

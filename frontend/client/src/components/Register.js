@@ -1,15 +1,23 @@
-import React from "react";
+import Axios from "axios";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
-function Register() {
+function Register(props) {
+  const [email, setemail] = useState('')
+  const [password, setpassword] = useState('')
+  const submitHandler = async (e) => {
+    e.preventDefault()
+    const { data } = await Axios.post('/user/register', { email, password });
+    if (data == 'Success') {
+      props.history.push('/login');
+    } else {
+      alert('Please try again !')
+    }
+  }
 
   return (
     <div className="container">
       <div className="row">
         <div className="col s8 offset-s2">
-          <Link to="/" className="btn-flat waves-effect">
-            <i className="material-icons left">keyboard_backspace</i> Back to
-              home
-            </Link>
           <div className="col s12" style={{ paddingLeft: "11.250px" }}>
             <h4>
               <b>Register</b> below
@@ -18,22 +26,11 @@ function Register() {
               Already have an account? <Link to="/login">Log in</Link>
             </p>
           </div>
-          {/* <form noValidate onSubmit={this.onSubmit}>
+          <form onSubmit={submitHandler}>
             <div className="input-field col s12">
               <input
-                onChange={this.onChange}
-                value={this.state.name}
-                error={errors.name}
-                id="name"
-                type="text"
-              />
-              <label htmlFor="name">Name</label>
-            </div>
-            <div className="input-field col s12">
-              <input
-                onChange={this.onChange}
-                value={this.state.email}
-                error={errors.email}
+                onChange={(e) => setemail(e.target.value)}
+                value={email}
                 id="email"
                 type="email"
               />
@@ -41,23 +38,12 @@ function Register() {
             </div>
             <div className="input-field col s12">
               <input
-                onChange={this.onChange}
-                value={this.state.password}
-                error={errors.password}
+                onChange={(e) => setpassword(e.target.value)}
+                value={password}
                 id="password"
                 type="password"
               />
               <label htmlFor="password">Password</label>
-            </div>
-            <div className="input-field col s12">
-              <input
-                onChange={this.onChange}
-                value={this.state.password2}
-                error={errors.password2}
-                id="password2"
-                type="password"
-              />
-              <label htmlFor="password2">Confirm Password</label>
             </div>
             <div className="col s12" style={{ paddingLeft: "11.250px" }}>
               <button
@@ -73,7 +59,7 @@ function Register() {
                 Sign up
                 </button>
             </div>
-          </form> */}
+          </form>
         </div>
       </div>
     </div>
